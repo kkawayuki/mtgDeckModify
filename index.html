@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mtg deck modify</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <h1>mtg deck modify</h1>
+    <div class="top-links">
+      <span class="top-divider"></span>
+      <button id="theme" class="top-link" type="button"></button>
+    </div>
+  </div>
+</header>
+<div class="page">
+<div class="layout">
+  <aside id="viewer" class="viewer"><p class="hint">Hover a card to see it here.</p></aside>
+  <main>
+  
+
+  <details id="lists" open>
+  <summary><h2>Deck lists</h2></summary>
+  <p class="hint">In Moxfield: Export → copy the deck text, then paste the old and new versions below.
+    Card images and prices (USD, TCGplayer) come from Scryfall.</p>
+  <div class="inputs">
+    
+    <label>Old list<textarea id="old" spellcheck="false" placeholder="1 Sol Ring (C21) 263&#10;1 Arcane Signet (C21) 236&#10;…"></textarea></label>
+    <label>New list<textarea id="new" spellcheck="false" placeholder="1 Sol Ring (C21) 263&#10;1 Fellwar Stone (C21) 241&#10;…"></textarea></label>
+  </div>
+  <button id="compare">Compare</button>
+  </details>
+  <p id="status" class="hint"></p>
+
+  <div id="results" hidden>
+    <section>
+      <div class="section-head">
+        <h2>Modifications</h2>
+        <div class="controls">
+        <label>Group by
+          <select id="group">
+            <option value="none">No grouping</option>
+            <option value="type">Card type</option>
+          </select>
+        </label>
+        <label class="sort">Sort by
+          <select id="sort">
+            <option value="price">Price (high to low)</option>
+            <option value="name">Name</option>
+            <option value="mv">Mana value</option>
+            <option value="type">Card type</option>
+          </select>
+        </label>
+        <details class="advanced">
+          <summary>Advanced</summary>
+          <div class="advanced-panel">
+            <label class="switch" title="Show New cards in their most-printed artwork">
+              <input type="checkbox" id="commonArt"> Most common art
+            </label>
+          </div>
+        </details>
+        </div>
+      </div>
+      <p id="selected" class="prices"></p>
+      <p class="hint">Click cards to choose changes: ✕ on old cards to take out, ✓ on new cards to put in.</p>
+      <div class="diff">
+        <div><h3>Old <span id="n-removed"></span></h3><div id="removed" class="cards"></div></div>
+        <div><h3>New <span id="n-added"></span></h3><div id="added" class="cards"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <button id="generate" type="button">Generate modified decklist</button>
+      <textarea id="modified" readonly spellcheck="false" placeholder="Your old list, minus ✕ cards, plus ✓ cards."></textarea>
+    </section>
+
+    <details>
+      <summary><h2>Same <span id="n-same"></span></h2></summary>
+      <div id="same" class="cards"></div>
+    </details>
+  </div>
+
+  <section id="setguide" hidden>
+    <h2>Set guide</h2>
+    <p class="hint">Sets with printings of the most added cards (any printing).</p>
+    <div class="rarities">
+      <label><input type="checkbox" value="common" checked> Common</label>
+      <label><input type="checkbox" value="uncommon" checked> Uncommon</label>
+      <label><input type="checkbox" value="rare" checked> Rare</label>
+      <label><input type="checkbox" value="mythic" checked> Mythic / special</label>
+    </div>
+    <p id="sets-status" class="hint"></p>
+    <div id="sets"></div>
+  </section>
+  </main>
+</div>
+
+</div>
+  <script src="config.js"></script>
+  <script src="sample-decks.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

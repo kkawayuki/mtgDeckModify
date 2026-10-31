@@ -1,0 +1,182 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  --card: light-dark(#ffffff, #1e1f22);
+  --page: light-dark(#f4f5f7, #121315);
+  --line: light-dark(#dfe1e5, #34363b);
+  --muted: light-dark(#5f6368, #9aa0a6);
+  --up: light-dark(#b3261e, #f28b82);
+  --down: light-dark(#1e7d34, #81c995);
+}
+
+body { margin: 0; background: var(--page); }
+.page { max-width: 1500px; margin: 0 auto; padding: 24px 16px; }
+/* The toggle sets data-theme; light-dark() colors follow color-scheme. */
+:root[data-theme=light] { color-scheme: light; }
+:root[data-theme=dark] { color-scheme: dark; }
+
+/* Card viewer on the left, everything else on the right. */
+.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; }
+.viewer { position: sticky; top: 24px; align-self: start; }
+.viewer img { display: block; width: 100%; border-radius: 4.75% / 3.5%; margin-bottom: 8px; }
+.viewer p { margin: 4px 0; text-align: center; color: var(--muted); font-size: 0.9rem; }
+
+/* Header bar in Scryfall's style: full-width dark purple, Lato, faded white links. */
+.top { background: #2B253A; padding: 0 16px; font-family: Lato, "Helvetica Neue", Arial, sans-serif; }
+.top-inner { max-width: 1500px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.top h1 { margin: 0; font-size: 27px; font-weight: 700; color: #FDFDFD; letter-spacing: 0.01em; }
+.top-links { display: flex; align-items: center; }
+.top-divider { height: 20px; border-right: 1px solid rgb(255 255 255 / 0.4); margin-right: 6px; }
+/* Theme toggle: full white with an outline, for contrast against the dark bar. */
+.top-link { padding: 6px 12px; margin-left: 8px; border: 1px solid rgb(255 255 255 / 0.6); border-radius: 6px; background: none;
+  font-family: inherit; font-size: 14px; font-weight: 600; line-height: 22px; color: #fff; cursor: pointer; }
+.top-link:hover { background: rgb(255 255 255 / 0.15); border-color: #fff; }
+h2 { margin: 0; font-size: 1.15rem; display: inline; }
+h3 { margin: 0 0 10px; font-size: 1rem; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+.inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.inputs label { font-weight: 600; }
+textarea {
+  display: block;
+  width: 100%;
+  height: 220px;
+  margin-top: 6px;
+  padding: 10px;
+  box-sizing: border-box;
+  font: 0.85rem ui-monospace, monospace;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  resize: vertical;
+}
+button { padding: 8px 20px; font: inherit; font-weight: 600; cursor: pointer; }
+#compare { margin-top: 12px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+/* "Advanced" opens a small dropdown panel instead of pushing the header around. */
+details.advanced { position: relative; margin: 0; padding: 0; border: 0; background: none; }
+details.advanced summary, details.advanced[open] summary { margin: 0; }
+.advanced-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 5;
+  padding: 10px 14px;
+  white-space: nowrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+
+/* A checkbox drawn as a toggle switch. */
+.switch { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switch input::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition: transform 0.15s;
+}
+.switch input:checked { background: #188038; }
+.switch input:checked::before { transform: translateX(14px); }
+/* Group headings span the whole card grid. */
+.group-label { grid-column: 1 / -1; margin-top: 8px; font-weight: 600; border-bottom: 1px solid var(--line); }
+select { font: inherit; padding: 4px 6px; }
+
+section, details {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+summary { cursor: pointer; }
+#lists { margin-top: 0; } /* first box: top lines up with the card preview */
+details[open] summary { margin-bottom: 12px; }
+
+.prices { margin: 8px 0 16px; }
+.prices .up { color: var(--up); }
+.prices .down { color: var(--down); }
+
+/* Removed on the left, added on the right, split by a line; 4 equal cards per row on each side. */
+.diff { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+.diff::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid var(--line); }
+.diff .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.tile { font-size: 0.8rem; }
+.tile .art { position: relative; aspect-ratio: 488 / 680; border-radius: 4.75% / 3.5%; overflow: hidden; background: var(--line); }
+.tile img { display: block; width: 100%; height: 100%; }
+.tile .art > span:not(.qty) { display: grid; place-items: center; height: 100%; padding: 8px; text-align: center; }
+.qty {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.75);
+  color: #fff;
+  font-weight: 700;
+}
+.tile .price { margin-top: 4px; text-align: center; color: var(--muted); }
+.tile:hover .art { outline: 2px solid var(--muted); }
+.diff .tile { cursor: pointer; }
+
+/* Marks toggled by clicking: ✕ (take out) on old cards, ✓ (put in) on new ones. */
+.tile.marked .art::after {
+  position: absolute;
+  top: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+}
+#removed .tile.marked .art::after { content: '✕'; left: 6px; background: #c5221f; }
+#added .tile.marked .art::after { content: '✓'; right: 6px; background: #188038; }
+#removed .tile.marked img { opacity: 0.6; }
+
+#generate { display: block; margin-bottom: 12px; }
+#sets details { margin: 0; padding: 0; border: 0; background: none; }
+#sets summary { padding: 8px 0; border-top: 1px solid var(--line); color: var(--muted); }
+
+/* Set guide: one bar per set, sized by how many added cards it has. */
+.rarities { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 0; }
+.set-row { display: grid; grid-template-columns: 220px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+.set-row .bar { height: 22px; border-radius: 4px; background: var(--muted); color: var(--card); font-size: 0.8rem;
+  font-weight: 700; line-height: 22px; padding-left: 8px; box-sizing: border-box; min-width: fit-content; }
+.set-row .names { margin-top: 4px; color: var(--muted); font-size: 0.8rem; }
+.set-row .names span:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .viewer { display: none; }
+}
+
+@media (max-width: 700px) {
+  .inputs, .diff { grid-template-columns: 1fr; }
+  .diff::before { display: none; }
+  .diff > div + div { border-top: 1px solid var(--line); padding-top: 16px; }
+}
