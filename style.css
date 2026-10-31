@@ -148,13 +148,14 @@ details[open] summary { margin-bottom: 12px; }
 .diff { user-select: none; }
 .diff img { -webkit-user-drag: none; }
 /* Selection rectangle while click-dragging over cards. */
-.marquee { position: fixed; z-index: 20; pointer-events: none;
+.marquee { position: absolute; z-index: 20; pointer-events: none;
   border: 1px solid light-dark(#000, #fff); background: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.15)); }
 
 /* Marks toggled by clicking: ✕ (take out) on old cards, ✓ (put in) on new ones. */
 .tile.marked .art::after {
   position: absolute;
   top: 6px;
+  left: 6px;
   display: grid;
   place-items: center;
   width: 28px;
@@ -166,8 +167,8 @@ details[open] summary { margin-bottom: 12px; }
   font-weight: 700;
   font-size: 16px;
 }
-#removed .tile.marked .art::after { content: '✕'; left: 6px; }
-#added .tile.marked .art::after { content: '✓'; right: 6px; }
+#removed .tile.marked .art::after { content: '✕'; }
+#added .tile.marked .art::after { content: '✓'; }
 #removed .tile.marked img { opacity: 0.6; }
 
 #generate { display: block; margin-bottom: 12px; }

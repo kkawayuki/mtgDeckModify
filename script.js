@@ -368,8 +368,12 @@ if (ENV === 'development') {
 // --- Marking cards ------------------------------------------------------------
 // Click toggles one Old/New card's mark. Click-and-drag draws a rectangle, and every
 // card it touches takes the opposite of the starting card's state (mark or unmark a
-// group); cards the rectangle leaves again go back to how they were.
-const DRAG_START = 5; // px of movement before a click becomes a drag
+// group); cards the rectangle leaves again go back to how they were. Holding the
+// cursor near the top or bottom of the window scrolls the page, and the rectangle
+// (anchored to the page, not the window) keeps growing.
+const DRAG_START = 5;  // px of movement before a click becomes a drag
+const EDGE = 60;       // px from the window edge where scrolling starts
+const MAX_SCROLL = 20; // px per frame at the very edge
 let drag = null;
 
 const setMark = (tile, on) => tile.classList.toggle('marked', (tile.item.marked = on));
@@ -380,24 +384,47 @@ for (const id of ['removed', 'added']) {
     if (!start || e.button !== 0) return;
     e.preventDefault(); // no text selection or image dragging
     const tiles = [...$(id).querySelectorAll('.tile')];
-    drag = { start, x: e.clientX, y: e.clientY, tiles, before: tiles.map((t) => !!t.item.marked), target: !start.item.marked, box: null };
+    drag = { start, x: e.pageX, y: e.pageY, cx: e.clientX, cy: e.clientY, tiles,
+      before: tiles.map((t) => !!t.item.marked), target: !start.item.marked, box: null };
   });
+}
+
+// Redraws the rectangle from the start point to the cursor, in page coordinates.
+function updateDrag() {
+  const x = drag.cx + scrollX, y = drag.cy + scrollY;
+  const left = Math.min(drag.x, x), right = Math.max(drag.x, x);
+  const top = Math.min(drag.y, y), bottom = Math.max(drag.y, y);
+  Object.assign(drag.box.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
+  drag.tiles.forEach((t, i) => {
+    const r = t.getBoundingClientRect();
+    const hit = r.left + scrollX < right && r.right + scrollX > left && r.top + scrollY < bottom && r.bottom + scrollY > top;
+    setMark(t, hit ? drag.target : drag.before[i]);
+  });
+  drawSelected();
+}
+
+// While dragging, scroll when the cursor is near the top or bottom edge (faster closer in).
+function autoScroll() {
+  if (!drag?.box) return;
+  const down = drag.cy - (innerHeight - EDGE), up = EDGE - drag.cy;
+  const step = down > 0 ? Math.min(down, EDGE) / EDGE * MAX_SCROLL : up > 0 ? -Math.min(up, EDGE) / EDGE * MAX_SCROLL : 0;
+  if (step) {
+    scrollBy(0, step);
+    updateDrag();
+  }
+  requestAnimationFrame(autoScroll);
 }
 
 window.addEventListener('pointermove', (e) => {
   if (!drag) return;
+  drag.cx = e.clientX;
+  drag.cy = e.clientY;
   if (!drag.box) {
-    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < DRAG_START) return;
+    if (Math.hypot(e.pageX - drag.x, e.pageY - drag.y) < DRAG_START) return;
     drag.box = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'marquee' }));
+    requestAnimationFrame(autoScroll);
   }
-  const left = Math.min(drag.x, e.clientX), right = Math.max(drag.x, e.clientX);
-  const top = Math.min(drag.y, e.clientY), bottom = Math.max(drag.y, e.clientY);
-  Object.assign(drag.box.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
-  drag.tiles.forEach((t, i) => {
-    const r = t.getBoundingClientRect();
-    setMark(t, r.left < right && r.right > left && r.top < bottom && r.bottom > top ? drag.target : drag.before[i]);
-  });
-  drawSelected();
+  updateDrag();
 });
 
 function endDrag(e) {
@@ -407,5 +434,6 @@ function endDrag(e) {
   drag = null;
   drawSelected();
 }
+window.addEventListener('scroll', () => drag?.box && updateDrag()); // wheel/trackpad scrolling mid-drag
 window.addEventListener('pointerup', endDrag);
 window.addEventListener('pointercancel', endDrag);
