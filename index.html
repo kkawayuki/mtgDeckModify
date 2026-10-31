@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>mtg deck modify</title>
+  <title>mtg deckmod</title>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
   <link rel="stylesheet" href="style.css">
@@ -11,7 +11,7 @@
 <body>
 <header class="top">
   <div class="top-inner">
-    <h1>mtg deck modify</h1>
+    <h1>mtg deck mod</h1>
     <div class="top-links">
       <span class="top-divider"></span>
       <button id="theme" class="top-link" type="button"></button>
@@ -20,11 +20,11 @@
 </header>
 <div class="page">
 <div class="layout">
-  <aside id="viewer" class="viewer"><p class="hint">Hover a card to see it here.</p></aside>
+  <aside id="viewer" class="viewer"></aside>
   <main>
   
 
-  <details id="lists" open>
+  <details id="lists" class="locked" open>
   <summary><h2>Deck lists</h2></summary>
   <p class="hint">In Moxfield: Export → copy the deck text, then paste the old and new versions below.
     Card images and prices (USD, TCGplayer) come from Scryfall.</p>
@@ -51,6 +51,7 @@
         <label class="sort">Sort by
           <select id="sort">
             <option value="price">Price (high to low)</option>
+            <option value="priceAsc">Price (low to high)</option>
             <option value="name">Name</option>
             <option value="mv">Mana value</option>
             <option value="type">Card type</option>

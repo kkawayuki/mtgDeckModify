@@ -32,6 +32,8 @@ body { margin: 0; background: var(--page); }
 .top-link { padding: 6px 12px; margin-left: 8px; border: 1px solid rgb(255 255 255 / 0.6); border-radius: 6px; background: none;
   font-family: inherit; font-size: 14px; font-weight: 600; line-height: 22px; color: #fff; cursor: pointer; }
 .top-link:hover { background: rgb(255 255 255 / 0.15); border-color: #fff; }
+.top-link { display: inline-flex; align-items: center; gap: 6px; }
+.top-link svg { width: 16px; height: 16px; fill: currentColor; }
 h2 { margin: 0; font-size: 1.15rem; display: inline; }
 h3 { margin: 0 0 10px; font-size: 1rem; }
 .hint { color: var(--muted); font-size: 0.9rem; }
@@ -111,6 +113,9 @@ section, details {
 }
 summary { cursor: pointer; }
 #lists { margin-top: 0; } /* first box: top lines up with the card preview */
+/* No collapse arrow (or collapsing) until a comparison has succeeded. */
+#lists.locked summary { list-style: none; pointer-events: none; }
+#lists.locked summary::-webkit-details-marker { display: none; }
 details[open] summary { margin-bottom: 12px; }
 
 .prices { margin: 8px 0 16px; }
@@ -140,6 +145,11 @@ details[open] summary { margin-bottom: 12px; }
 .tile .price { margin-top: 4px; text-align: center; color: var(--muted); }
 .tile:hover .art { outline: 2px solid var(--muted); }
 .diff .tile { cursor: pointer; }
+.diff { user-select: none; }
+.diff img { -webkit-user-drag: none; }
+/* Selection rectangle while click-dragging over cards. */
+.marquee { position: fixed; z-index: 20; pointer-events: none;
+  border: 1px solid light-dark(#000, #fff); background: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.15)); }
 
 /* Marks toggled by clicking: ✕ (take out) on old cards, ✓ (put in) on new ones. */
 .tile.marked .art::after {
@@ -150,12 +160,14 @@ details[open] summary { margin-bottom: 12px; }
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  color: #fff;
+  /* Inverse of the theme, like the selection box: black in light mode, white in dark. */
+  color: light-dark(#fff, #000);
+  background: light-dark(#000, #fff);
   font-weight: 700;
   font-size: 16px;
 }
-#removed .tile.marked .art::after { content: '✕'; left: 6px; background: #c5221f; }
-#added .tile.marked .art::after { content: '✓'; right: 6px; background: #188038; }
+#removed .tile.marked .art::after { content: '✕'; left: 6px; }
+#added .tile.marked .art::after { content: '✓'; right: 6px; }
 #removed .tile.marked img { opacity: 0.6; }
 
 #generate { display: block; margin-bottom: 12px; }

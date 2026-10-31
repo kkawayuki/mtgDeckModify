@@ -93,6 +93,7 @@ function showCard(name, card) {
 
 const SORTS = {
   price: (a, b, found) => (price(found.get(b.key)) || 0) - (price(found.get(a.key)) || 0),
+  priceAsc: (a, b, found) => (price(found.get(a.key)) || 0) - (price(found.get(b.key)) || 0),
   name: () => 0,
   mv: (a, b, found) => (found.get(a.key)?.cmc ?? 99) - (found.get(b.key)?.cmc ?? 99),
   type: (a, b, found) => typeRank(found.get(a.key)) - typeRank(found.get(b.key)),
@@ -117,12 +118,9 @@ function render(id, list, found) {
   const tiles = list.map((c) => {
     const own = found.get(c.key), art = commonArtOn && commonArt.get(c.key);
     const el = tile(c.name, c.qty, art ? { ...own, image_uris: art.image_uris, card_faces: art.card_faces } : own);
-    if (id !== 'same') { // old/new cards toggle their ✕ / ✓ mark
+    if (id !== 'same') { // old/new cards carry a ✕ / ✓ mark (see "Marking cards" below)
+      el.item = c;
       el.classList.toggle('marked', !!c.marked);
-      el.addEventListener('click', () => {
-        el.classList.toggle('marked', (c.marked = !c.marked));
-        drawSelected();
-      });
     }
     return el;
   });
@@ -159,9 +157,13 @@ $('group').addEventListener('change', () => last && draw());
 $('commonArt').addEventListener('change', () => last && draw());
 
 // Light/dark toggle, remembered in this browser; defaults to the system setting.
+// Solid sun / moon icons for the toggle (it offers the other mode).
+const SUN = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  $('theme').textContent = theme === 'dark' ? '☀ Light mode' : '☾ Dark mode';
+  $('theme').innerHTML = theme === 'dark' ? `${SUN} Light mode` : `${MOON} Dark mode`;
   try { localStorage.setItem('theme', theme); } catch {}
 }
 let savedTheme = null;
@@ -193,6 +195,7 @@ $('compare').addEventListener('click', async () => {
     $('modified').value = '';
     draw();
     $('results').hidden = false;
+    $('lists').classList.remove('locked');
     $('lists').open = false;
     loadSetGuide(added);
 
@@ -361,3 +364,48 @@ if (ENV === 'development') {
   $('old').value = SAMPLE_OLD;
   $('new').value = SAMPLE_NEW;
 }
+
+// --- Marking cards ------------------------------------------------------------
+// Click toggles one Old/New card's mark. Click-and-drag draws a rectangle, and every
+// card it touches takes the opposite of the starting card's state (mark or unmark a
+// group); cards the rectangle leaves again go back to how they were.
+const DRAG_START = 5; // px of movement before a click becomes a drag
+let drag = null;
+
+const setMark = (tile, on) => tile.classList.toggle('marked', (tile.item.marked = on));
+
+for (const id of ['removed', 'added']) {
+  $(id).addEventListener('pointerdown', (e) => {
+    const start = e.target.closest('.tile');
+    if (!start || e.button !== 0) return;
+    e.preventDefault(); // no text selection or image dragging
+    const tiles = [...$(id).querySelectorAll('.tile')];
+    drag = { start, x: e.clientX, y: e.clientY, tiles, before: tiles.map((t) => !!t.item.marked), target: !start.item.marked, box: null };
+  });
+}
+
+window.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  if (!drag.box) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < DRAG_START) return;
+    drag.box = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'marquee' }));
+  }
+  const left = Math.min(drag.x, e.clientX), right = Math.max(drag.x, e.clientX);
+  const top = Math.min(drag.y, e.clientY), bottom = Math.max(drag.y, e.clientY);
+  Object.assign(drag.box.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
+  drag.tiles.forEach((t, i) => {
+    const r = t.getBoundingClientRect();
+    setMark(t, r.left < right && r.right > left && r.top < bottom && r.bottom > top ? drag.target : drag.before[i]);
+  });
+  drawSelected();
+});
+
+function endDrag(e) {
+  if (!drag) return;
+  if (drag.box) drag.box.remove();
+  else if (e.type === 'pointerup') setMark(drag.start, drag.target); // a plain click
+  drag = null;
+  drawSelected();
+}
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
